@@ -1,0 +1,134 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f3f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.shell {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 72px 0;
+}
+
+.hero {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #4263eb;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 12px;
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+h2 {
+  margin-bottom: 6px;
+  font-size: 1.15rem;
+}
+
+.intro {
+  max-width: 520px;
+  margin-bottom: 0;
+  color: #5d6880;
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.card {
+  margin-top: 18px;
+  padding: 24px;
+  border: 1px solid #e0e6f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(37 52 86 / 7%);
+}
+
+.status-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #f59f00;
+  box-shadow: 0 0 0 5px #fff4d6;
+}
+
+.status-dot.success {
+  background: #2f9e44;
+  box-shadow: 0 0 0 5px #dff6e4;
+}
+
+.status-text {
+  margin-bottom: 0;
+  color: #5d6880;
+  line-height: 1.5;
+}
+
+.tip {
+  margin-top: 22px;
+  padding: 15px 16px;
+  border-left: 4px solid #f59f00;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #5d4b1f;
+}
+
+.tip p {
+  margin: 5px 0 0;
+  line-height: 1.5;
+}
+
+.success-tip {
+  border-left-color: #2f9e44;
+  background: #f1fbf3;
+  color: #235b2d;
+}
+
+code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 7%);
+  font-size: 0.9em;
+}
+
+.learning-card {
+  padding-bottom: 18px;
+}
+
+ol {
+  margin: 0;
+  padding-left: 22px;
+  color: #5d6880;
+  line-height: 1.9;
+}
