@@ -1,0 +1,27 @@
+<%- include("partials/header", { title: "Edit answer · Campus Q&A" }) %>
+
+<main class="shell narrow-shell">
+  <section class="form-card">
+    <p class="eyebrow">Phase 4 · Answers</p>
+    <h1>Edit your answer</h1>
+    <p class="form-intro">Update the answer, then return to the question.</p>
+
+    <% if (error) { %>
+      <div class="alert" role="alert"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/answers/<%= values.answer_id %>/edit" class="stacked-form">
+      <label for="body">Answer</label>
+      <textarea id="body" name="body" rows="9" required><%= values.body || "" %></textarea>
+
+      <div class="form-actions">
+        <button class="button" type="submit">Save changes</button>
+        <a class="button button-secondary button-inline" href="/questions/<%= values.question_id %>">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

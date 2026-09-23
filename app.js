@@ -135,6 +135,52 @@ function renderForbidden(res, message) {
   });
 }
 
+async function loadQuestionWithAnswers(questionId) {
+  const pool = getPool();
+  const [questionRows] = await pool.execute(
+    `SELECT
+       q.question_id,
+       q.uid_user,
+       q.title,
+       q.body,
+       q.created_at,
+       q.updated_at,
+       u.uName
+     FROM QA1_Questions AS q
+     INNER JOIN QA1_Users AS u
+       ON q.uid_user = u.uid_user
+     WHERE q.question_id = ?
+     LIMIT 1`,
+    [questionId]
+  );
+
+  if (!questionRows[0]) {
+    return null;
+  }
+
+  const [answers] = await pool.execute(
+    `SELECT
+       a.answer_id,
+       a.question_id,
+       a.uid_user,
+       a.body,
+       a.created_at,
+       a.updated_at,
+       u.uName
+     FROM QA1_Answers AS a
+     INNER JOIN QA1_Users AS u
+       ON a.uid_user = u.uid_user
+     WHERE a.question_id = ?
+     ORDER BY a.created_at ASC, a.answer_id ASC`,
+    [questionId]
+  );
+
+  return {
+    question: questionRows[0],
+    answers
+  };
+}
+
 app.get("/questions/new", requireLogin, (req, res) => {
   renderQuestionForm(res, "new");
 });
@@ -191,49 +237,20 @@ app.get("/questions/:id", async (req, res) => {
   }
 
   try {
-    const pool = getPool();
-    const [rows] = await pool.execute(
-      `SELECT
-         q.question_id,
-         q.uid_user,
-         q.title,
-         q.body,
-         q.created_at,
-         q.updated_at,
-         u.uName
-       FROM QA1_Questions AS q
-       INNER JOIN QA1_Users AS u
-         ON q.uid_user = u.uid_user
-       WHERE q.question_id = ?
-       LIMIT 1`,
-      [questionId]
-    );
+    const pageData = await loadQuestionWithAnswers(questionId);
 
-    if (!rows[0]) {
+    if (!pageData) {
       return res.status(404).render("error", {
         title: "Question not found",
         message: "That question does not exist."
       });
     }
 
-    const [answers] = await pool.execute(
-      `SELECT
-         a.answer_id,
-         a.question_id,
-         a.uid_user,
-         a.body,
-         a.created_at,
-         a.updated_at,
-         u.uName
-       FROM QA1_Answers AS a
-       INNER JOIN QA1_Users AS u
-         ON a.uid_user = u.uid_user
-       WHERE a.question_id = ?
-       ORDER BY a.created_at ASC, a.answer_id ASC`,
-      [questionId]
-    );
-
-    res.render("question-detail", { question: rows[0], answers });
+    res.render("question-detail", {
+      ...pageData,
+      answerError: null,
+      answerDraft: ""
+    });
   } catch (error) {
     console.error(`Question load failed: ${error.code || "UNKNOWN_ERROR"}`);
     res.status(500).render("error", {
@@ -258,11 +275,28 @@ app.post("/questions/:id/answers", requireLogin, async (req, res) => {
   }
 
   if (!values.body) {
-    return renderAnswerForm(
-      res,
-      values,
-      "Answer body cannot be empty."
-    );
+    try {
+      const pageData = await loadQuestionWithAnswers(questionId);
+
+      if (!pageData) {
+        return res.status(404).render("error", {
+          title: "Question not found",
+          message: "That question does not exist."
+        });
+      }
+
+      return res.status(400).render("question-detail", {
+        ...pageData,
+        answerError: "Answer body cannot be empty.",
+        answerDraft: values.body
+      });
+    } catch (error) {
+      console.error(`Answer form load failed: ${error.code || "UNKNOWN_ERROR"}`);
+      return res.status(500).render("error", {
+        title: "Answer error",
+        message: "We could not load the answer form right now."
+      });
+    }
   }
 
   try {

@@ -32,11 +32,73 @@
     <% } %>
   </article>
 
-  <section class="card answers-placeholder">
-    <p class="eyebrow">Phase 4</p>
-    <h2>Answers</h2>
-    <p>Answer posting will be added in the next phase.</p>
+  <section class="answers-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Community replies</p>
+        <h2>Answers</h2>
+      </div>
+      <span class="question-count"><%= answers.length %> answer<%= answers.length === 1 ? "" : "s" %></span>
+    </div>
+
+    <% if (answers.length === 0) { %>
+      <div class="card answer-empty">
+        <p>No answers yet. Share what you know when you can.</p>
+      </div>
+    <% } else { %>
+      <div class="answer-list">
+        <% answers.forEach((answer) => { %>
+          <article class="answer-card">
+            <div class="question-meta">
+              Answered by <strong><%= answer.uName %></strong>
+              <span aria-hidden="true">·</span>
+              <%= new Date(answer.created_at).toLocaleString() %>
+              <% if (answer.updated_at) { %>
+                <span aria-hidden="true">·</span>
+                Edited <%= new Date(answer.updated_at).toLocaleString() %>
+              <% } %>
+            </div>
+            <div class="answer-body"><%= answer.body %></div>
+
+            <% if (currentUser && currentUser.uid_user === answer.uid_user) { %>
+              <div class="post-actions answer-actions">
+                <a class="button button-small button-secondary" href="/answers/<%= answer.answer_id %>/edit">Edit</a>
+                <form method="POST" action="/answers/<%= answer.answer_id %>/delete" class="inline-form">
+                  <button
+                    class="button button-small danger-button"
+                    type="submit"
+                    onclick="return confirm('Delete this answer?')"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+            <% } %>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
   </section>
+
+  <% if (currentUser) { %>
+    <section class="form-card answer-form-card">
+      <p class="eyebrow">Add your answer</p>
+      <h2>Share what you know</h2>
+      <% if (answerError) { %>
+        <div class="alert" role="alert"><%= answerError %></div>
+      <% } %>
+      <form method="POST" action="/questions/<%= question.question_id %>/answers" class="stacked-form">
+        <label for="answer-body">Answer</label>
+        <textarea id="answer-body" name="body" rows="7" required><%= answerDraft || "" %></textarea>
+        <button class="button" type="submit">Post answer</button>
+      </form>
+    </section>
+  <% } else { %>
+    <section class="card answer-login-prompt">
+      <p>Want to answer this question?</p>
+      <a class="button button-inline" href="/login">Log in to answer</a>
+    </section>
+  <% } %>
 </main>
 
 <%- include("partials/footer") %>
