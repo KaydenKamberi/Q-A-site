@@ -1,56 +1,50 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Campus Q&A</title>
-    <link rel="stylesheet" href="/styles.css">
-  </head>
-  <body>
-    <main class="shell">
-      <header class="hero">
-        <p class="eyebrow">Phase 1 · Setup and connection</p>
-        <h1>Campus Q&amp;A</h1>
-        <p class="intro">
-          A small server-rendered app for practicing MySQL, Express routes, and CRUD.
+<%- include("partials/header", { title: "Campus Q&A" }) %>
+
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">Phase 2 · Authentication</p>
+    <h1>Campus Q&amp;A</h1>
+    <p class="intro">
+      A small server-rendered app for practicing MySQL, Express routes, and CRUD.
+    </p>
+  </section>
+
+  <section class="card">
+    <div class="status-row">
+      <span class="status-dot <%= databaseStatus.ok ? "success" : "pending" %>"></span>
+      <div>
+        <h2>Database connection</h2>
+        <p class="status-text"><%= databaseStatus.message %></p>
+      </div>
+    </div>
+
+    <% if (!databaseStatus.ok) { %>
+      <div class="tip">
+        <strong>What happens next?</strong>
+        <p>
+          Add the Hostinger connection values as Replit Secrets, then restart
+          the app. The startup check will try <code>SELECT 1</code>.
         </p>
-      </header>
+      </div>
+    <% } else { %>
+      <div class="tip success-tip">
+        <strong>Database connection is working.</strong>
+        <p>
+          The app reached the hosted MySQL server. You can now create an account
+          and test the authentication flow.
+        </p>
+      </div>
+    <% } %>
+  </section>
 
-      <section class="card">
-        <div class="status-row">
-          <span class="status-dot <%= databaseStatus.ok ? "success" : "pending" %>"></span>
-          <div>
-            <h2>Database connection</h2>
-            <p class="status-text"><%= databaseStatus.message %></p>
-          </div>
-        </div>
+  <section class="card learning-card">
+    <p class="eyebrow">Project roadmap</p>
+    <ol>
+      <li>Accounts and login sessions <span class="complete">Complete</span></li>
+      <li>Questions CRUD</li>
+      <li>Answers CRUD</li>
+    </ol>
+  </section>
+</main>
 
-        <% if (!databaseStatus.ok) { %>
-          <div class="tip">
-            <strong>What happens next?</strong>
-            <p>
-              Add the Hostinger connection values as Replit Secrets, then restart
-              the app. The startup check will try <code>SELECT 1</code>.
-            </p>
-          </div>
-        <% } else { %>
-          <div class="tip success-tip">
-            <strong>Phase 1 is working.</strong>
-            <p>
-              The app reached the hosted MySQL server. No tables were created or changed.
-            </p>
-          </div>
-        <% } %>
-      </section>
-
-      <section class="card learning-card">
-        <p class="eyebrow">Coming in later phases</p>
-        <ol>
-          <li>Accounts and login sessions</li>
-          <li>Questions CRUD</li>
-          <li>Answers CRUD</li>
-        </ol>
-      </section>
-    </main>
-  </body>
-</html>
+<%- include("partials/footer") %>

@@ -61,10 +61,11 @@ function renderRegister(res, values = {}, error = null) {
   });
 }
 
-function renderLogin(res, values = {}, error = null) {
+function renderLogin(res, values = {}, error = null, notice = null) {
   return res.status(error ? 400 : 200).render("login", {
     values,
-    error
+    error,
+    notice
   });
 }
 
