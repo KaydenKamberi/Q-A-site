@@ -70,7 +70,265 @@ function renderLogin(res, values = {}, error = null, notice = null) {
 }
 
 app.get("/", (req, res) => {
-  res.render("index", { databaseStatus });
+  (async () => {
+    try {
+      const pool = getPool();
+      const [questions] = await pool.execute(`
+        SELECT
+          q.question_id,
+          q.title,
+          q.body,
+          q.created_at,
+          q.updated_at,
+          u.uName,
+          COUNT(a.answer_id) AS answer_count
+        FROM QA1_Questions AS q
+        INNER JOIN QA1_Users AS u
+          ON q.uid_user = u.uid_user
+        LEFT JOIN QA1_Answers AS a
+          ON q.question_id = a.question_id
+        GROUP BY
+          q.question_id,
+          q.title,
+          q.body,
+          q.created_at,
+          q.updated_at,
+          u.uName
+        ORDER BY q.created_at DESC, q.question_id DESC
+      `);
+
+      res.render("index", { databaseStatus, questions });
+    } catch (error) {
+      console.error(`Question list failed: ${error.code || "UNKNOWN_ERROR"}`);
+      res.status(500).render("error", {
+        title: "Questions unavailable",
+        message: "We could not load the questions right now."
+      });
+    }
+  })();
+});
+
+function parseQuestionId(value) {
+  const questionId = Number(value);
+  return Number.isInteger(questionId) && questionId > 0 ? questionId : null;
+}
+
+function renderQuestionForm(res, mode, values = {}, error = null) {
+  return res.status(error ? 400 : 200).render("question-form", {
+    mode,
+    values,
+    error
+  });
+}
+
+function renderForbidden(res, message) {
+  return res.status(403).render("error", {
+    title: "Not allowed",
+    message
+  });
+}
+
+app.get("/questions/new", requireLogin, (req, res) => {
+  renderQuestionForm(res, "new");
+});
+
+app.post("/questions", requireLogin, async (req, res) => {
+  const values = {
+    title: String(req.body.title || "").trim(),
+    body: String(req.body.body || "").trim()
+  };
+
+  if (values.title.length < 1 || values.title.length > 150) {
+    return renderQuestionForm(
+      res,
+      "new",
+      values,
+      "Question title must be between 1 and 150 characters."
+    );
+  }
+
+  if (!values.body) {
+    return renderQuestionForm(
+      res,
+      "new",
+      values,
+      "Question body cannot be empty."
+    );
+  }
+
+  try {
+    const pool = getPool();
+    const [result] = await pool.execute(
+      "INSERT INTO QA1_Questions (uid_user, title, body) VALUES (?, ?, ?)",
+      [req.session.uid_user, values.title, values.body]
+    );
+
+    res.redirect(`/questions/${result.insertId}`);
+  } catch (error) {
+    console.error(`Question creation failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Question error",
+      message: "We could not create your question right now."
+    });
+  }
+});
+
+app.get("/questions/:id", async (req, res) => {
+  const questionId = parseQuestionId(req.params.id);
+
+  if (!questionId) {
+    return res.status(404).render("error", {
+      title: "Question not found",
+      message: "That question does not exist."
+    });
+  }
+
+  try {
+    const pool = getPool();
+    const [rows] = await pool.execute(
+      `SELECT
+         q.question_id,
+         q.uid_user,
+         q.title,
+         q.body,
+         q.created_at,
+         q.updated_at,
+         u.uName
+       FROM QA1_Questions AS q
+       INNER JOIN QA1_Users AS u
+         ON q.uid_user = u.uid_user
+       WHERE q.question_id = ?
+       LIMIT 1`,
+      [questionId]
+    );
+
+    if (!rows[0]) {
+      return res.status(404).render("error", {
+        title: "Question not found",
+        message: "That question does not exist."
+      });
+    }
+
+    res.render("question-detail", { question: rows[0] });
+  } catch (error) {
+    console.error(`Question load failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Question unavailable",
+      message: "We could not load that question right now."
+    });
+  }
+});
+
+app.get("/questions/:id/edit", requireLogin, async (req, res) => {
+  const questionId = parseQuestionId(req.params.id);
+
+  if (!questionId) {
+    return renderForbidden(res, "You cannot edit that question.");
+  }
+
+  try {
+    const pool = getPool();
+    const [rows] = await pool.execute(
+      `SELECT question_id, title, body
+       FROM QA1_Questions
+       WHERE question_id = ? AND uid_user = ?
+       LIMIT 1`,
+      [questionId, req.session.uid_user]
+    );
+
+    if (!rows[0]) {
+      return renderForbidden(res, "Only the question owner can edit it.");
+    }
+
+    renderQuestionForm(res, "edit", rows[0]);
+  } catch (error) {
+    console.error(`Question edit load failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Question unavailable",
+      message: "We could not load the edit form right now."
+    });
+  }
+});
+
+app.post("/questions/:id/edit", requireLogin, async (req, res) => {
+  const questionId = parseQuestionId(req.params.id);
+  const values = {
+    question_id: questionId,
+    title: String(req.body.title || "").trim(),
+    body: String(req.body.body || "").trim()
+  };
+
+  if (values.title.length < 1 || values.title.length > 150) {
+    return renderQuestionForm(
+      res,
+      "edit",
+      values,
+      "Question title must be between 1 and 150 characters."
+    );
+  }
+
+  if (!values.body) {
+    return renderQuestionForm(
+      res,
+      "edit",
+      values,
+      "Question body cannot be empty."
+    );
+  }
+
+  if (!questionId) {
+    return renderForbidden(res, "You cannot edit that question.");
+  }
+
+  try {
+    const pool = getPool();
+    const [result] = await pool.execute(
+      `UPDATE QA1_Questions
+       SET title = ?, body = ?
+       WHERE question_id = ? AND uid_user = ?`,
+      [values.title, values.body, questionId, req.session.uid_user]
+    );
+
+    if (result.affectedRows === 0) {
+      return renderForbidden(res, "Only the question owner can edit it.");
+    }
+
+    res.redirect(`/questions/${questionId}`);
+  } catch (error) {
+    console.error(`Question update failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Question error",
+      message: "We could not update your question right now."
+    });
+  }
+});
+
+app.post("/questions/:id/delete", requireLogin, async (req, res) => {
+  const questionId = parseQuestionId(req.params.id);
+
+  if (!questionId) {
+    return renderForbidden(res, "You cannot delete that question.");
+  }
+
+  try {
+    const pool = getPool();
+    const [result] = await pool.execute(
+      "DELETE FROM QA1_Questions WHERE question_id = ? AND uid_user = ?",
+      [questionId, req.session.uid_user]
+    );
+
+    if (result.affectedRows === 0) {
+      return renderForbidden(res, "Only the question owner can delete it.");
+    }
+
+    res.redirect("/");
+  } catch (error) {
+    console.error(`Question deletion failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Question error",
+      message: "We could not delete your question right now."
+    });
+  }
 });
 
 app.get("/register", (req, res) => {
