@@ -1,0 +1,48 @@
+<%- include("partials/header", { title: `${mode === "edit" ? "Edit" : "Ask"} a question · Campus Q&A` }) %>
+
+<main class="shell narrow-shell">
+  <section class="form-card">
+    <p class="eyebrow">Phase 3 · Questions</p>
+    <h1><%= mode === "edit" ? "Edit your question" : "Ask a question" %></h1>
+    <p class="form-intro">
+      <%= mode === "edit"
+        ? "Update the title or details of your question."
+        : "Share a question with the community." %>
+    </p>
+
+    <% if (error) { %>
+      <div class="alert" role="alert"><%= error %></div>
+    <% } %>
+
+    <form
+      method="POST"
+      action="<%= mode === "edit" ? `/questions/${values.question_id}/edit` : "/questions" %>"
+      class="stacked-form"
+    >
+      <label for="title">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        maxlength="150"
+        value="<%= values.title || "" %>"
+        required
+      >
+      <p class="field-help">Keep the title under 150 characters.</p>
+
+      <label for="body">Question details</label>
+      <textarea id="body" name="body" rows="9" required><%= values.body || "" %></textarea>
+
+      <div class="form-actions">
+        <button class="button" type="submit">
+          <%= mode === "edit" ? "Save changes" : "Post question" %>
+        </button>
+        <a class="button button-secondary button-inline" href="<%= mode === "edit" ? `/questions/${values.question_id}` : "/" %>">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

@@ -1,49 +1,71 @@
 <%- include("partials/header", { title: "Campus Q&A" }) %>
 
 <main class="shell">
-  <section class="hero">
-    <p class="eyebrow">Phase 2 · Authentication</p>
-    <h1>Campus Q&amp;A</h1>
-    <p class="intro">
-      A small server-rendered app for practicing MySQL, Express routes, and CRUD.
-    </p>
-  </section>
-
-  <section class="card">
-    <div class="status-row">
-      <span class="status-dot <%= databaseStatus.ok ? "success" : "pending" %>"></span>
-      <div>
-        <h2>Database connection</h2>
-        <p class="status-text"><%= databaseStatus.message %></p>
-      </div>
+  <section class="hero hero-row">
+    <div>
+      <p class="eyebrow">Phase 3 · Questions</p>
+      <h1>Campus Q&amp;A</h1>
+      <p class="intro">
+        Ask questions, learn from the community, and practice database-backed CRUD.
+      </p>
     </div>
-
-    <% if (!databaseStatus.ok) { %>
-      <div class="tip">
-        <strong>What happens next?</strong>
-        <p>
-          Add the Hostinger connection values as Replit Secrets, then restart
-          the app. The startup check will try <code>SELECT 1</code>.
-        </p>
-      </div>
-    <% } else { %>
-      <div class="tip success-tip">
-        <strong>Database connection is working.</strong>
-        <p>
-          The app reached the hosted MySQL server. You can now create an account
-          and test the authentication flow.
-        </p>
-      </div>
+    <% if (currentUser) { %>
+      <a class="button hero-button" href="/questions/new">Ask a question</a>
     <% } %>
   </section>
 
-  <section class="card learning-card">
-    <p class="eyebrow">Project roadmap</p>
-    <ol>
-      <li>Accounts and login sessions <span class="complete">Complete</span></li>
-      <li>Questions CRUD</li>
-      <li>Answers CRUD</li>
-    </ol>
+  <% if (!databaseStatus.ok) { %>
+    <section class="card">
+      <div class="status-row">
+        <span class="status-dot pending"></span>
+        <div>
+          <h2>Database connection</h2>
+          <p class="status-text"><%= databaseStatus.message %></p>
+        </div>
+      </div>
+    </section>
+  <% } %>
+
+  <section class="questions-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Newest first</p>
+        <h2>Questions</h2>
+      </div>
+      <span class="question-count"><%= questions.length %> question<%= questions.length === 1 ? "" : "s" %></span>
+    </div>
+
+    <% if (questions.length === 0) { %>
+      <div class="card empty-state">
+        <h3>No questions yet</h3>
+        <p>Be the first person to ask something.</p>
+        <% if (currentUser) { %>
+          <a class="button button-inline" href="/questions/new">Ask the first question</a>
+        <% } else { %>
+          <a class="button button-inline" href="/login">Log in to ask a question</a>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="question-list">
+        <% questions.forEach((question) => { %>
+          <article class="question-card">
+            <div class="question-card-main">
+              <p class="question-meta">
+                Asked by <strong><%= question.uName %></strong>
+                <span aria-hidden="true">·</span>
+                <%= new Date(question.created_at).toLocaleString() %>
+              </p>
+              <h3><a href="/questions/<%= question.question_id %>"><%= question.title %></a></h3>
+              <p class="question-preview"><%= question.body %></p>
+            </div>
+            <div class="answer-count">
+              <strong><%= question.answer_count %></strong>
+              <span>answer<%= Number(question.answer_count) === 1 ? "" : "s" %></span>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
   </section>
 </main>
 

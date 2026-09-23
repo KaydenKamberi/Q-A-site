@@ -12,6 +12,7 @@
         <a class="brand" href="/">Campus Q&amp;A</a>
         <nav class="nav" aria-label="Account">
           <% if (currentUser) { %>
+            <a class="nav-link" href="/questions/new">Ask a question</a>
             <span class="signed-in">Signed in as <strong><%= currentUser.uName %></strong></span>
             <form method="POST" action="/logout" class="inline-form">
               <button class="button button-small button-secondary" type="submit">Log out</button>

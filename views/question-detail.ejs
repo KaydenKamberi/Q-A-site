@@ -1,0 +1,42 @@
+<%- include("partials/header", { title: `${question.title} · Campus Q&A` }) %>
+
+<main class="shell">
+  <p class="eyebrow"><a class="back-link" href="/">← All questions</a></p>
+
+  <article class="detail-card">
+    <div class="question-meta">
+      Asked by <strong><%= question.uName %></strong>
+      <span aria-hidden="true">·</span>
+      <%= new Date(question.created_at).toLocaleString() %>
+      <% if (question.updated_at) { %>
+        <span aria-hidden="true">·</span>
+        Edited <%= new Date(question.updated_at).toLocaleString() %>
+      <% } %>
+    </div>
+    <h1><%= question.title %></h1>
+    <div class="question-body"><%= question.body %></div>
+
+    <% if (currentUser && currentUser.uid_user === question.uid_user) { %>
+      <div class="post-actions">
+        <a class="button button-small button-secondary" href="/questions/<%= question.question_id %>/edit">Edit</a>
+        <form method="POST" action="/questions/<%= question.question_id %>/delete" class="inline-form">
+          <button
+            class="button button-small danger-button"
+            type="submit"
+            onclick="return confirm('Delete this question?')"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </article>
+
+  <section class="card answers-placeholder">
+    <p class="eyebrow">Phase 4</p>
+    <h2>Answers</h2>
+    <p>Answer posting will be added in the next phase.</p>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

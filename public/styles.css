@@ -80,6 +80,18 @@ body {
   margin-bottom: 28px;
 }
 
+.hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.hero-button {
+  flex: 0 0 auto;
+  margin-bottom: 4px;
+}
+
 .eyebrow {
   margin: 0 0 10px;
   color: #4263eb;
@@ -166,6 +178,30 @@ h2 {
   font: inherit;
 }
 
+.stacked-form textarea {
+  width: 100%;
+  min-height: 190px;
+  padding: 12px 13px;
+  border: 1px solid #cbd4e3;
+  border-radius: 9px;
+  color: #172033;
+  background: #fff;
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.stacked-form textarea:focus {
+  border-color: #4263eb;
+  outline: 3px solid rgb(66 99 235 / 17%);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .stacked-form input:focus {
   border-color: #4263eb;
   outline: 3px solid rgb(66 99 235 / 17%);
@@ -210,6 +246,15 @@ h2 {
   background: #fff;
 }
 
+.danger-button {
+  color: #a61e4d;
+  background: #fff0f3;
+}
+
+.danger-button:hover {
+  background: #ffe3e8;
+}
+
 .button-secondary:hover {
   background: #f3f6fb;
 }
@@ -242,6 +287,166 @@ h2 {
   margin: 24px 0 0;
   color: #5d6880;
   font-size: 0.92rem;
+}
+
+.questions-section {
+  margin-top: 36px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.section-heading .eyebrow {
+  margin-bottom: 4px;
+}
+
+.question-count {
+  padding-bottom: 4px;
+  color: #7b879b;
+  font-size: 0.88rem;
+}
+
+.question-list {
+  display: grid;
+  gap: 12px;
+}
+
+.question-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 21px 22px;
+  border: 1px solid #e0e6f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(37 52 86 / 5%);
+}
+
+.question-card h3 {
+  margin: 7px 0 8px;
+  font-size: 1.18rem;
+  letter-spacing: -0.02em;
+}
+
+.question-card h3 a {
+  color: #172033;
+  text-decoration: none;
+}
+
+.question-card h3 a:hover {
+  color: #4263eb;
+}
+
+.question-card-main {
+  min-width: 0;
+}
+
+.question-meta {
+  margin-bottom: 0;
+  color: #7b879b;
+  font-size: 0.82rem;
+}
+
+.question-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 610px;
+  margin-bottom: 0;
+  color: #5d6880;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.answer-count {
+  display: flex;
+  min-width: 58px;
+  flex-direction: column;
+  align-items: center;
+  padding: 7px 6px;
+  border: 1px solid #dbe3ef;
+  border-radius: 9px;
+  color: #5d6880;
+  font-size: 0.75rem;
+}
+
+.answer-count strong {
+  color: #4263eb;
+  font-size: 1.15rem;
+}
+
+.empty-state {
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: #5d6880;
+}
+
+.detail-card {
+  padding: 32px;
+  border: 1px solid #e0e6f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(37 52 86 / 7%);
+}
+
+.back-link {
+  color: #4263eb;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.detail-card h1 {
+  margin: 12px 0 22px;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.question-body {
+  color: #35415a;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e7ebf2;
+}
+
+.answers-placeholder {
+  margin-top: 18px;
+}
+
+.answers-placeholder h2 {
+  margin-bottom: 8px;
+}
+
+.answers-placeholder p:last-child {
+  margin-bottom: 0;
+  color: #5d6880;
 }
 
 .status-row {
@@ -329,6 +534,31 @@ ol {
 
   .signed-in {
     display: none;
+  }
+
+  .hero-row,
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero-button {
+    margin-bottom: 0;
+  }
+
+  .question-card {
+    flex-direction: column;
+  }
+
+  .answer-count {
+    flex-direction: row;
+    gap: 5px;
+    align-items: baseline;
+  }
+
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .shell {
