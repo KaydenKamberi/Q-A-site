@@ -121,6 +121,13 @@ function renderQuestionForm(res, mode, values = {}, error = null) {
   });
 }
 
+function renderAnswerForm(res, values = {}, error = null) {
+  return res.status(error ? 400 : 200).render("answer-form", {
+    values,
+    error
+  });
+}
+
 function renderForbidden(res, message) {
   return res.status(403).render("error", {
     title: "Not allowed",
@@ -209,12 +216,201 @@ app.get("/questions/:id", async (req, res) => {
       });
     }
 
-    res.render("question-detail", { question: rows[0] });
+    const [answers] = await pool.execute(
+      `SELECT
+         a.answer_id,
+         a.question_id,
+         a.uid_user,
+         a.body,
+         a.created_at,
+         a.updated_at,
+         u.uName
+       FROM QA1_Answers AS a
+       INNER JOIN QA1_Users AS u
+         ON a.uid_user = u.uid_user
+       WHERE a.question_id = ?
+       ORDER BY a.created_at ASC, a.answer_id ASC`,
+      [questionId]
+    );
+
+    res.render("question-detail", { question: rows[0], answers });
   } catch (error) {
     console.error(`Question load failed: ${error.code || "UNKNOWN_ERROR"}`);
     res.status(500).render("error", {
       title: "Question unavailable",
       message: "We could not load that question right now."
+    });
+  }
+});
+
+app.post("/questions/:id/answers", requireLogin, async (req, res) => {
+  const questionId = parseQuestionId(req.params.id);
+  const values = {
+    question_id: questionId,
+    body: String(req.body.body || "").trim()
+  };
+
+  if (!questionId) {
+    return res.status(404).render("error", {
+      title: "Question not found",
+      message: "That question does not exist."
+    });
+  }
+
+  if (!values.body) {
+    return renderAnswerForm(
+      res,
+      values,
+      "Answer body cannot be empty."
+    );
+  }
+
+  try {
+    const pool = getPool();
+    const [questionRows] = await pool.execute(
+      "SELECT question_id FROM QA1_Questions WHERE question_id = ? LIMIT 1",
+      [questionId]
+    );
+
+    if (!questionRows[0]) {
+      return res.status(404).render("error", {
+        title: "Question not found",
+        message: "That question does not exist."
+      });
+    }
+
+    await pool.execute(
+      "INSERT INTO QA1_Answers (question_id, uid_user, body) VALUES (?, ?, ?)",
+      [questionId, req.session.uid_user, values.body]
+    );
+
+    res.redirect(`/questions/${questionId}`);
+  } catch (error) {
+    console.error(`Answer creation failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Answer error",
+      message: "We could not post your answer right now."
+    });
+  }
+});
+
+app.get("/answers/:id/edit", requireLogin, async (req, res) => {
+  const answerId = parseQuestionId(req.params.id);
+
+  if (!answerId) {
+    return renderForbidden(res, "You cannot edit that answer.");
+  }
+
+  try {
+    const pool = getPool();
+    const [rows] = await pool.execute(
+      `SELECT answer_id, question_id, body
+       FROM QA1_Answers
+       WHERE answer_id = ? AND uid_user = ?
+       LIMIT 1`,
+      [answerId, req.session.uid_user]
+    );
+
+    if (!rows[0]) {
+      return renderForbidden(res, "Only the answer owner can edit it.");
+    }
+
+    renderAnswerForm(res, rows[0]);
+  } catch (error) {
+    console.error(`Answer edit load failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Answer unavailable",
+      message: "We could not load the answer form right now."
+    });
+  }
+});
+
+app.post("/answers/:id/edit", requireLogin, async (req, res) => {
+  const answerId = parseQuestionId(req.params.id);
+  const values = {
+    answer_id: answerId,
+    body: String(req.body.body || "").trim()
+  };
+
+  if (!values.body) {
+    return renderAnswerForm(res, values, "Answer body cannot be empty.");
+  }
+
+  if (!answerId) {
+    return renderForbidden(res, "You cannot edit that answer.");
+  }
+
+  try {
+    const pool = getPool();
+    const [answerRows] = await pool.execute(
+      `SELECT question_id
+       FROM QA1_Answers
+       WHERE answer_id = ? AND uid_user = ?
+       LIMIT 1`,
+      [answerId, req.session.uid_user]
+    );
+
+    if (!answerRows[0]) {
+      return renderForbidden(res, "Only the answer owner can edit it.");
+    }
+
+    const [result] = await pool.execute(
+      `UPDATE QA1_Answers
+       SET body = ?
+       WHERE answer_id = ? AND uid_user = ?`,
+      [values.body, answerId, req.session.uid_user]
+    );
+
+    if (result.affectedRows === 0) {
+      return renderForbidden(res, "Only the answer owner can edit it.");
+    }
+
+    res.redirect(`/questions/${answerRows[0].question_id}`);
+  } catch (error) {
+    console.error(`Answer update failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Answer error",
+      message: "We could not update your answer right now."
+    });
+  }
+});
+
+app.post("/answers/:id/delete", requireLogin, async (req, res) => {
+  const answerId = parseQuestionId(req.params.id);
+
+  if (!answerId) {
+    return renderForbidden(res, "You cannot delete that answer.");
+  }
+
+  try {
+    const pool = getPool();
+    const [answerRows] = await pool.execute(
+      `SELECT question_id
+       FROM QA1_Answers
+       WHERE answer_id = ? AND uid_user = ?
+       LIMIT 1`,
+      [answerId, req.session.uid_user]
+    );
+
+    if (!answerRows[0]) {
+      return renderForbidden(res, "Only the answer owner can delete it.");
+    }
+
+    const [result] = await pool.execute(
+      "DELETE FROM QA1_Answers WHERE answer_id = ? AND uid_user = ?",
+      [answerId, req.session.uid_user]
+    );
+
+    if (result.affectedRows === 0) {
+      return renderForbidden(res, "Only the answer owner can delete it.");
+    }
+
+    res.redirect(`/questions/${answerRows[0].question_id}`);
+  } catch (error) {
+    console.error(`Answer deletion failed: ${error.code || "UNKNOWN_ERROR"}`);
+    res.status(500).render("error", {
+      title: "Answer error",
+      message: "We could not delete your answer right now."
     });
   }
 });
