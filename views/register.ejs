@@ -1,0 +1,56 @@
+<%- include("partials/header", { title: "Register · Campus Q&A" }) %>
+
+<main class="shell narrow-shell">
+  <section class="form-card">
+    <p class="eyebrow">Phase 2 · Authentication</p>
+    <h1>Create your account</h1>
+    <p class="form-intro">Your password is hashed before it is saved.</p>
+
+    <% if (error) { %>
+      <div class="alert" role="alert"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register" class="stacked-form">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        minlength="3"
+        maxlength="25"
+        value="<%= values.username || "" %>"
+        autocomplete="username"
+        required
+      >
+      <p class="field-help">Use 3–25 characters.</p>
+
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        maxlength="255"
+        value="<%= values.email || "" %>"
+        autocomplete="email"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        minlength="8"
+        autocomplete="new-password"
+        required
+      >
+      <p class="field-help">Use at least 8 characters.</p>
+
+      <button class="button" type="submit">Create account</button>
+    </form>
+
+    <p class="form-footer">Already registered? <a href="/login">Log in</a>.</p>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

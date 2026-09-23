@@ -11,8 +11,10 @@
     "node": ">=20"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
+    "express-session": "^1.18.2",
     "mysql2": "^3.24.4"
   }
 }

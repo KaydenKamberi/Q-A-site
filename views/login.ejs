@@ -1,0 +1,45 @@
+<%- include("partials/header", { title: "Log in · Campus Q&A" }) %>
+
+<main class="shell narrow-shell">
+  <section class="form-card">
+    <p class="eyebrow">Phase 2 · Authentication</p>
+    <h1>Welcome back</h1>
+    <p class="form-intro">Log in to post and manage your own questions and answers.</p>
+
+    <% if (notice) { %>
+      <div class="notice" role="status"><%= notice %></div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert" role="alert"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/login" class="stacked-form">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        maxlength="25"
+        value="<%= values.username || "" %>"
+        autocomplete="username"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button class="button" type="submit">Log in</button>
+    </form>
+
+    <p class="form-footer">Need an account? <a href="/register">Register</a>.</p>
+  </section>
+</main>
+
+<%- include("partials/footer") %>
