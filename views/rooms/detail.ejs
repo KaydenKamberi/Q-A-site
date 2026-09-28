@@ -1,0 +1,43 @@
+<%- include("../partials/header", { title: `${room.name} · Campus Q&A` }) %>
+<main class="shell">
+  <p class="eyebrow"><a class="back-link" href="/rooms">← My rooms</a></p>
+  <section class="detail-card">
+    <p class="eyebrow">Private study room</p>
+    <h1><%= room.name %></h1>
+    <p>Invite classmates with code <strong class="join-code"><%= room.join_code %></strong></p>
+    <p class="question-meta">Members: <%= members.map(member => member.uName).join(", ") %></p>
+    <div class="room-actions">
+      <a class="button button-inline" href="/rooms/<%= room.room_id %>/questions/new">Ask in this room</a>
+      <% if (currentUser.uid_user === room.owner_id) { %>
+        <a class="button button-secondary button-inline" href="/rooms/<%= room.room_id %>/settings">Room settings</a>
+        <form method="POST" action="/rooms/<%= room.room_id %>/delete" class="inline-form">
+          <button class="button button-small danger-button" type="submit" onclick="return confirm('Delete this room and all its questions and answers?')">Delete room</button>
+        </form>
+      <% } else { %>
+        <form method="POST" action="/rooms/<%= room.room_id %>/leave" class="inline-form">
+          <button class="button button-small button-secondary" type="submit" onclick="return confirm('Leave this room?')">Leave room</button>
+        </form>
+      <% } %>
+    </div>
+  </section>
+  <section class="questions-section">
+    <div class="section-heading"><h2>Room questions</h2><span class="question-count"><%= questions.length %> question<%= questions.length === 1 ? "" : "s" %></span></div>
+    <% if (!questions.length) { %>
+      <div class="card empty-state"><p>No questions in this room yet.</p></div>
+    <% } else { %>
+      <div class="question-list">
+        <% questions.forEach((question) => { %>
+          <article class="question-card">
+            <div class="question-card-main">
+              <p class="question-meta">Asked by <strong><%= question.uName %></strong> · <%= new Date(question.created_at).toLocaleString() %></p>
+              <h3><a href="/questions/<%= question.question_id %>"><%= question.title %></a></h3>
+              <p class="question-preview"><%= question.body %></p>
+            </div>
+            <div class="answer-count"><strong><%= question.answer_count %></strong><span>answer<%= Number(question.answer_count) === 1 ? "" : "s" %></span></div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include("../partials/footer") %>

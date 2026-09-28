@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const session = require("express-session");
 const path = require("path");
 const { checkDatabaseConnection, getPool } = require("./db");
+const { accessibleQuestion, accessibleAnswer } = require("./room-access");
+const roomRoutes = require("./room-routes");
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
@@ -40,6 +42,7 @@ app.use((req, res, next) => {
     : null;
   next();
 });
+app.use("/rooms", roomRoutes);
 
 let databaseStatus = {
   ok: false,
@@ -87,6 +90,7 @@ app.get("/", (req, res) => {
           ON q.uid_user = u.uid_user
         LEFT JOIN QA1_Answers AS a
           ON q.question_id = a.question_id
+        WHERE q.room_id IS NULL
         GROUP BY
           q.question_id,
           q.title,
@@ -117,7 +121,8 @@ function renderQuestionForm(res, mode, values = {}, error = null) {
   return res.status(error ? 400 : 200).render("question-form", {
     mode,
     values,
-    error
+    error,
+    room: null
   });
 }
 
@@ -135,12 +140,51 @@ function renderForbidden(res, message) {
   });
 }
 
+function questionGate(loginRequired = false, ownerRequired = false) {
+  return async (req, res, next) => {
+    try {
+      const question = await accessibleQuestion(parseQuestionId(req.params.id), req.session.uid_user);
+      if (!question) {
+        return res.status(404).render("error", {
+          title: "Question not found",
+          message: "That question does not exist."
+        });
+      }
+      if (loginRequired && !req.session.uid_user) return res.redirect("/login");
+      if (ownerRequired && question.uid_user !== req.session.uid_user) {
+        return renderForbidden(res, "Only the question owner can edit or delete it.");
+      }
+      req.visibleQuestion = question;
+      next();
+    } catch (error) { next(error); }
+  };
+}
+
+function answerGate(req, res, next) {
+  (async () => {
+    const answer = await accessibleAnswer(parseQuestionId(req.params.id), req.session.uid_user);
+    if (!answer) {
+      return res.status(404).render("error", {
+        title: "Answer not found",
+        message: "That answer does not exist."
+      });
+    }
+    if (!req.session.uid_user) return res.redirect("/login");
+    if (answer.uid_user !== req.session.uid_user) {
+      return renderForbidden(res, "Only the answer owner can edit or delete it.");
+    }
+    req.visibleAnswer = answer;
+    next();
+  })().catch(next);
+}
+
 async function loadQuestionWithAnswers(questionId) {
   const pool = getPool();
   const [questionRows] = await pool.execute(
     `SELECT
        q.question_id,
        q.uid_user,
+       q.room_id,
        q.title,
        q.body,
        q.created_at,
@@ -226,7 +270,7 @@ app.post("/questions", requireLogin, async (req, res) => {
   }
 });
 
-app.get("/questions/:id", async (req, res) => {
+app.get("/questions/:id", questionGate(), async (req, res) => {
   const questionId = parseQuestionId(req.params.id);
 
   if (!questionId) {
@@ -260,7 +304,7 @@ app.get("/questions/:id", async (req, res) => {
   }
 });
 
-app.post("/questions/:id/answers", requireLogin, async (req, res) => {
+app.post("/questions/:id/answers", questionGate(true), async (req, res) => {
   const questionId = parseQuestionId(req.params.id);
   const values = {
     question_id: questionId,
@@ -328,7 +372,7 @@ app.post("/questions/:id/answers", requireLogin, async (req, res) => {
   }
 });
 
-app.get("/answers/:id/edit", requireLogin, async (req, res) => {
+app.get("/answers/:id/edit", answerGate, async (req, res) => {
   const answerId = parseQuestionId(req.params.id);
 
   if (!answerId) {
@@ -359,16 +403,12 @@ app.get("/answers/:id/edit", requireLogin, async (req, res) => {
   }
 });
 
-app.post("/answers/:id/edit", requireLogin, async (req, res) => {
+app.post("/answers/:id/edit", answerGate, async (req, res) => {
   const answerId = parseQuestionId(req.params.id);
   const values = {
     answer_id: answerId,
     body: String(req.body.body || "").trim()
   };
-
-  if (!values.body) {
-    return renderAnswerForm(res, values, "Answer body cannot be empty.");
-  }
 
   if (!answerId) {
     return renderForbidden(res, "You cannot edit that answer.");
@@ -386,6 +426,11 @@ app.post("/answers/:id/edit", requireLogin, async (req, res) => {
 
     if (!answerRows[0]) {
       return renderForbidden(res, "Only the answer owner can edit it.");
+    }
+
+    values.question_id = answerRows[0].question_id;
+    if (!values.body) {
+      return renderAnswerForm(res, values, "Answer body cannot be empty.");
     }
 
     const [result] = await pool.execute(
@@ -409,7 +454,7 @@ app.post("/answers/:id/edit", requireLogin, async (req, res) => {
   }
 });
 
-app.post("/answers/:id/delete", requireLogin, async (req, res) => {
+app.post("/answers/:id/delete", answerGate, async (req, res) => {
   const answerId = parseQuestionId(req.params.id);
 
   if (!answerId) {
@@ -449,7 +494,7 @@ app.post("/answers/:id/delete", requireLogin, async (req, res) => {
   }
 });
 
-app.get("/questions/:id/edit", requireLogin, async (req, res) => {
+app.get("/questions/:id/edit", questionGate(true, true), async (req, res) => {
   const questionId = parseQuestionId(req.params.id);
 
   if (!questionId) {
@@ -470,7 +515,12 @@ app.get("/questions/:id/edit", requireLogin, async (req, res) => {
       return renderForbidden(res, "Only the question owner can edit it.");
     }
 
-    renderQuestionForm(res, "edit", rows[0]);
+    return res.render("question-form", {
+      mode: "edit",
+      values: rows[0],
+      error: null,
+      room: req.visibleQuestion.room_id ? { room_id: req.visibleQuestion.room_id } : null
+    });
   } catch (error) {
     console.error(`Question edit load failed: ${error.code || "UNKNOWN_ERROR"}`);
     res.status(500).render("error", {
@@ -480,30 +530,25 @@ app.get("/questions/:id/edit", requireLogin, async (req, res) => {
   }
 });
 
-app.post("/questions/:id/edit", requireLogin, async (req, res) => {
+app.post("/questions/:id/edit", questionGate(true, true), async (req, res) => {
   const questionId = parseQuestionId(req.params.id);
   const values = {
     question_id: questionId,
     title: String(req.body.title || "").trim(),
     body: String(req.body.body || "").trim()
   };
+  const room = req.visibleQuestion.room_id ? { room_id: req.visibleQuestion.room_id } : null;
 
   if (values.title.length < 1 || values.title.length > 150) {
-    return renderQuestionForm(
-      res,
-      "edit",
-      values,
-      "Question title must be between 1 and 150 characters."
-    );
+    return res.status(400).render("question-form", {
+      mode: "edit", values, room, error: "Question title must be between 1 and 150 characters."
+    });
   }
 
   if (!values.body) {
-    return renderQuestionForm(
-      res,
-      "edit",
-      values,
-      "Question body cannot be empty."
-    );
+    return res.status(400).render("question-form", {
+      mode: "edit", values, room, error: "Question body cannot be empty."
+    });
   }
 
   if (!questionId) {
@@ -533,7 +578,7 @@ app.post("/questions/:id/edit", requireLogin, async (req, res) => {
   }
 });
 
-app.post("/questions/:id/delete", requireLogin, async (req, res) => {
+app.post("/questions/:id/delete", questionGate(true, true), async (req, res) => {
   const questionId = parseQuestionId(req.params.id);
 
   if (!questionId) {
@@ -551,7 +596,7 @@ app.post("/questions/:id/delete", requireLogin, async (req, res) => {
       return renderForbidden(res, "Only the question owner can delete it.");
     }
 
-    res.redirect("/");
+    res.redirect(req.visibleQuestion.room_id ? `/rooms/${req.visibleQuestion.room_id}` : "/");
   } catch (error) {
     console.error(`Question deletion failed: ${error.code || "UNKNOWN_ERROR"}`);
     res.status(500).render("error", {

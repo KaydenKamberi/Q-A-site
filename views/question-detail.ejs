@@ -1,7 +1,13 @@
 <%- include("partials/header", { title: `${question.title} · Campus Q&A` }) %>
 
 <main class="shell">
-  <p class="eyebrow"><a class="back-link" href="/">← All questions</a></p>
+  <p class="eyebrow">
+    <% if (question.room_id) { %>
+      <a class="back-link" href="/rooms/<%= question.room_id %>">← Back to room</a>
+    <% } else { %>
+      <a class="back-link" href="/">← All questions</a>
+    <% } %>
+  </p>
 
   <article class="detail-card">
     <div class="question-meta">

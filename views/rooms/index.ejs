@@ -1,0 +1,46 @@
+<%- include("../partials/header", { title: "My rooms · Campus Q&A" }) %>
+<main class="shell">
+  <div class="hero">
+    <p class="eyebrow">Private study spaces</p>
+    <h1>My rooms</h1>
+    <p class="intro">Share a join code with classmates so you can study together.</p>
+  </div>
+
+  <% if (error) { %><div class="alert" role="alert"><%= error %></div><% } %>
+  <div class="room-forms">
+    <section class="form-card">
+      <h2>Create a room</h2>
+      <form class="stacked-form" action="/rooms" method="POST">
+        <label for="room-name">Room name</label>
+        <input id="room-name" name="name" maxlength="60" required value="<%= values.name || "" %>">
+        <button class="button" type="submit">Create room</button>
+      </form>
+    </section>
+    <section class="form-card">
+      <h2>Join a room</h2>
+      <form class="stacked-form" action="/rooms/join" method="POST">
+        <label for="join-code">6-character join code</label>
+        <input id="join-code" name="join_code" maxlength="6" minlength="6" required
+          autocapitalize="characters" value="<%= values.join_code || "" %>">
+        <button class="button" type="submit">Join room</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="questions-section">
+    <div class="section-heading"><h2>Rooms you belong to</h2><span class="question-count"><%= rooms.length %> room<%= rooms.length === 1 ? "" : "s" %></span></div>
+    <% if (!rooms.length) { %>
+      <div class="card empty-state"><p>You aren't in any rooms yet. Create one or enter a join code.</p></div>
+    <% } else { %>
+      <div class="question-list">
+        <% rooms.forEach((room) => { %>
+          <a class="room-list-item" href="/rooms/<%= room.room_id %>">
+            <strong><%= room.name %></strong>
+            <span><%= room.owner_id === currentUser.uid_user ? "Owner" : "Member" %></span>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include("../partials/footer") %>

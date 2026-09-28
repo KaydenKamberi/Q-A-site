@@ -2,12 +2,12 @@
 
 <main class="shell narrow-shell">
   <section class="form-card">
-    <p class="eyebrow">Phase 3 · Questions</p>
+    <p class="eyebrow"><%= room ? "Study room question" : "Public question" %></p>
     <h1><%= mode === "edit" ? "Edit your question" : "Ask a question" %></h1>
     <p class="form-intro">
       <%= mode === "edit"
         ? "Update the title or details of your question."
-        : "Share a question with the community." %>
+        : room ? "Only members of this room can see this question." : "Share a question with the community." %>
     </p>
 
     <% if (error) { %>
@@ -16,7 +16,7 @@
 
     <form
       method="POST"
-      action="<%= mode === "edit" ? `/questions/${values.question_id}/edit` : "/questions" %>"
+      action="<%= mode === "edit" ? `/questions/${values.question_id}/edit` : room ? `/rooms/${room.room_id}/questions` : "/questions" %>"
       class="stacked-form"
     >
       <label for="title">Title</label>
@@ -37,7 +37,7 @@
         <button class="button" type="submit">
           <%= mode === "edit" ? "Save changes" : "Post question" %>
         </button>
-        <a class="button button-secondary button-inline" href="<%= mode === "edit" ? `/questions/${values.question_id}` : "/" %>">
+        <a class="button button-secondary button-inline" href="<%= mode === "edit" ? `/questions/${values.question_id}` : room ? `/rooms/${room.room_id}` : "/" %>">
           Cancel
         </a>
       </div>

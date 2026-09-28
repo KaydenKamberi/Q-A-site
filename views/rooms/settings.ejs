@@ -1,0 +1,31 @@
+<%- include("../partials/header", { title: `Settings · ${room.name} · Campus Q&A` }) %>
+<main class="shell narrow-shell">
+  <section class="form-card">
+    <p class="eyebrow">Room settings</p>
+    <h1>Edit <%= room.name %></h1>
+    <% if (error) { %><div class="alert" role="alert"><%= error %></div><% } %>
+    <form class="stacked-form" action="/rooms/<%= room.room_id %>/settings" method="POST">
+      <label for="name">Room name</label>
+      <input id="name" name="name" maxlength="60" required value="<%= room.name %>">
+      <label for="ai_mode">Studybot mode</label>
+      <select id="ai_mode" name="ai_mode">
+        <option value="hint" <%= room.ai_mode === "hint" ? "selected" : "" %>>Hints only</option>
+        <option value="explain" <%= room.ai_mode === "explain" ? "selected" : "" %>>Explain concepts</option>
+        <option value="full" <%= room.ai_mode === "full" ? "selected" : "" %>>Full answers</option>
+      </select>
+      <label for="ai_notes">Notes for studybot</label>
+      <textarea id="ai_notes" name="ai_notes" rows="5" maxlength="500" placeholder="We're in AP Precalc Unit 1. Use our class vocabulary."><%= room.ai_notes || "" %></textarea>
+      <p class="field-help"><output id="notes-count" for="ai_notes"><%= (room.ai_notes || "").length %></output> / 500 characters</p>
+      <div class="form-actions">
+        <button class="button" type="submit">Save settings</button>
+        <a class="button button-secondary button-inline" href="/rooms/<%= room.room_id %>">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+  const notes = document.getElementById("ai_notes");
+  const count = document.getElementById("notes-count");
+  notes.addEventListener("input", () => { count.textContent = notes.value.length; });
+</script>
+<%- include("../partials/footer") %>

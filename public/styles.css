@@ -196,6 +196,58 @@ h2 {
   outline: 3px solid rgb(66 99 235 / 17%);
 }
 
+.stacked-form select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid #cbd4e3;
+  border-radius: 9px;
+  color: #172033;
+  background: #fff;
+  font: inherit;
+}
+
+.room-forms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.room-forms .form-card {
+  box-shadow: 0 8px 20px rgb(37 52 86 / 5%);
+}
+
+.room-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.join-code {
+  padding: 5px 9px;
+  border-radius: 7px;
+  color: #273e9d;
+  background: #e9edff;
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.15em;
+}
+
+.room-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 20px 24px;
+  border: 1px solid #e0e6f0;
+  border-radius: 14px;
+  color: #172033;
+  background: white;
+  text-decoration: none;
+}
+
+.room-list-item:hover { border-color: #4263eb; }
+.room-list-item span { color: #5d6880; font-size: 0.88rem; }
+
 .form-actions {
   display: flex;
   align-items: center;
@@ -579,6 +631,7 @@ ol {
 }
 
 @media (max-width: 600px) {
+  .room-forms { grid-template-columns: 1fr; }
   .header-inner {
     min-height: 60px;
   }

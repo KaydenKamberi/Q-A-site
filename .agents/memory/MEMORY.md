@@ -1,0 +1,1 @@
+- [GitHub push authentication](github-push-auth.md) — connector authorization does not necessarily authorize the Git HTTPS remote.
