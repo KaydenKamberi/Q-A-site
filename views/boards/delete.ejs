@@ -1,0 +1,29 @@
+<% const count = Number(question_count) || 0; %>
+<%- include("../partials/header", { title: `Delete b/${board.name} · Campus Q&A` }) %>
+<link rel="stylesheet" href="/css/boards.css">
+
+<main class="shell narrow-shell">
+  <p class="eyebrow"><a class="back-link" href="/b/<%= board.name %>">← Back to b/<%= board.name %></a></p>
+
+  <section class="form-card">
+    <p class="eyebrow board-danger-eyebrow">Delete board</p>
+    <h1>Delete b/<%= board.name %>?</h1>
+    <p class="form-intro">You're about to permanently delete <strong><%= board.title %></strong>.</p>
+
+    <div class="board-delete-warning" role="alert">
+      <% if (count === 0) { %>
+        This board has no questions. Deleting it can't be undone.
+      <% } else { %>
+        <strong><%= count %> question<%= count === 1 ? "" : "s" %></strong>
+        and all of <%= count === 1 ? "its" : "their" %> answers will be deleted too. This can't be undone.
+      <% } %>
+    </div>
+
+    <form method="POST" action="/b/<%= board.name %>/delete" class="form-actions">
+      <button class="button danger-button" type="submit">Delete board</button>
+      <a class="button button-secondary" href="/b/<%= board.name %>">Cancel</a>
+    </form>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>

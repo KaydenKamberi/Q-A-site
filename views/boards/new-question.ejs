@@ -1,0 +1,47 @@
+<% const fieldErrors = errors || {}; %>
+<%- include("../partials/header", { title: `Ask in b/${board.name} · Campus Q&A` }) %>
+<link rel="stylesheet" href="/css/boards.css">
+
+<main class="shell narrow-shell">
+  <p class="eyebrow"><a class="back-link" href="/b/<%= board.name %>">← Back to b/<%= board.name %></a></p>
+
+  <section class="form-card">
+    <p class="eyebrow">b/<%= board.name %></p>
+    <h1>Ask a question</h1>
+    <p class="form-intro">Posting to <strong><%= board.title %></strong>. Anyone can read questions in this board.</p>
+
+    <%- include("../partials/boards/form-errors", { errors: fieldErrors, fields: ["title", "body"] }) %>
+
+    <form method="POST" action="/b/<%= board.name %>/questions" class="stacked-form">
+      <label for="title">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        maxlength="150"
+        class="<%= fieldErrors.title ? "has-error" : "" %>"
+        value="<%= values.title || "" %>"
+        required
+      >
+      <% if (fieldErrors.title) { %><p class="field-error"><%= fieldErrors.title %></p><% } %>
+      <p class="field-help">Keep the title under 150 characters.</p>
+
+      <label for="body">Question details</label>
+      <textarea
+        id="body"
+        name="body"
+        rows="9"
+        class="<%= fieldErrors.body ? "has-error" : "" %>"
+        required
+      ><%= values.body || "" %></textarea>
+      <% if (fieldErrors.body) { %><p class="field-error"><%= fieldErrors.body %></p><% } %>
+
+      <div class="form-actions">
+        <button class="button" type="submit">Post question</button>
+        <a class="button button-secondary button-inline" href="/b/<%= board.name %>">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>

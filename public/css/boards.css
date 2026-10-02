@@ -1,0 +1,164 @@
+/* Boards pages. Builds on /styles.css; only adds what the shared styles don't cover. */
+
+.board-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 21px 22px;
+  border: 1px solid #e0e6f0;
+  border-radius: 14px;
+  color: #172033;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(37 52 86 / 5%);
+  text-decoration: none;
+}
+
+.board-list-item:hover {
+  border-color: #4263eb;
+}
+
+.board-list-item:hover .board-list-title {
+  color: #4263eb;
+}
+
+.board-list-main {
+  min-width: 0;
+}
+
+.board-handle {
+  margin-bottom: 5px;
+  color: #7b879b;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+
+.board-list-title {
+  display: block;
+  font-size: 1.18rem;
+  letter-spacing: -0.02em;
+}
+
+.board-list-description {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 610px;
+  margin: 8px 0 0;
+  color: #5d6880;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.detail-card .board-description {
+  margin-bottom: 14px;
+  color: #35415a;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.board-rules {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border: 1px solid #e7ebf2;
+  border-radius: 12px;
+  background: #f8faff;
+}
+
+.board-rules h2 {
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #4263eb;
+}
+
+.board-rules li {
+  overflow-wrap: anywhere;
+}
+
+.board-name-input {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #cbd4e3;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.board-name-input:focus-within {
+  border-color: #4263eb;
+  outline: 3px solid rgb(66 99 235 / 17%);
+}
+
+.board-name-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 4px 0 13px;
+  color: #7b879b;
+  font-family: ui-monospace, monospace;
+}
+
+.stacked-form .board-name-input input {
+  padding-left: 2px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: ui-monospace, monospace;
+}
+
+.stacked-form input:disabled {
+  color: #5d6880;
+  background: #f3f6fb;
+  cursor: not-allowed;
+}
+
+.stacked-form .board-short-textarea {
+  min-height: 96px;
+}
+
+.board-optional {
+  color: #7b879b;
+  font-weight: 500;
+}
+
+.stacked-form .has-error,
+.board-name-input.has-error {
+  border-color: #e03131;
+}
+
+.field-error {
+  margin: -3px 0 0;
+  color: #9b1c1c;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.board-alert-line {
+  margin: 0;
+}
+
+.board-alert-line + .board-alert-line {
+  margin-top: 4px;
+}
+
+.board-danger-eyebrow {
+  color: #a61e4d;
+}
+
+.board-delete-warning {
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  border: 1px solid #ffc9c9;
+  border-radius: 8px;
+  color: #9b1c1c;
+  background: #fff5f5;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .board-list-item {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,14 @@
+<%# Expects `errors` (field → message) and `fields` (field names shown inline next to their inputs). %>
+<% const errorKeys = Object.keys(errors || {}); %>
+<% if (errorKeys.length) { %>
+  <div class="alert" role="alert">
+    <% const otherKeys = errorKeys.filter((key) => !fields.includes(key)); %>
+    <% if (otherKeys.length) { %>
+      <% otherKeys.forEach((key) => { %>
+        <p class="board-alert-line"><%= errors[key] %></p>
+      <% }) %>
+    <% } else { %>
+      Please fix the highlighted field<%= errorKeys.length === 1 ? "" : "s" %> below.
+    <% } %>
+  </div>
+<% } %>
