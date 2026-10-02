@@ -5,6 +5,7 @@ const path = require("path");
 const { checkDatabaseConnection, getPool } = require("./db");
 const { accessibleQuestion, accessibleAnswer } = require("./room-access");
 const roomRoutes = require("./room-routes");
+const createBoardRouter = require("./routes/boards");
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
@@ -49,6 +50,8 @@ let databaseStatus = {
   message: "Database check has not run yet."
 };
 
+app.use("/", createBoardRouter({ getDatabaseStatus: () => databaseStatus }));
+
 function requireLogin(req, res, next) {
   if (!req.session.uid_user) {
     return res.redirect("/login");
@@ -71,46 +74,6 @@ function renderLogin(res, values = {}, error = null, notice = null) {
     notice
   });
 }
-
-app.get("/", (req, res) => {
-  (async () => {
-    try {
-      const pool = getPool();
-      const [questions] = await pool.execute(`
-        SELECT
-          q.question_id,
-          q.title,
-          q.body,
-          q.created_at,
-          q.updated_at,
-          u.uName,
-          COUNT(a.answer_id) AS answer_count
-        FROM QA1_Questions AS q
-        INNER JOIN QA1_Users AS u
-          ON q.uid_user = u.uid_user
-        LEFT JOIN QA1_Answers AS a
-          ON q.question_id = a.question_id
-        WHERE q.room_id IS NULL
-        GROUP BY
-          q.question_id,
-          q.title,
-          q.body,
-          q.created_at,
-          q.updated_at,
-          u.uName
-        ORDER BY q.created_at DESC, q.question_id DESC
-      `);
-
-      res.render("index", { databaseStatus, questions });
-    } catch (error) {
-      console.error(`Question list failed: ${error.code || "UNKNOWN_ERROR"}`);
-      res.status(500).render("error", {
-        title: "Questions unavailable",
-        message: "We could not load the questions right now."
-      });
-    }
-  })();
-});
 
 function parseQuestionId(value) {
   const questionId = Number(value);
@@ -185,14 +148,19 @@ async function loadQuestionWithAnswers(questionId) {
        q.question_id,
        q.uid_user,
        q.room_id,
+       q.board_id,
        q.title,
        q.body,
        q.created_at,
        q.updated_at,
-       u.uName
+       u.uName,
+       b.name AS board_name,
+       b.title AS board_title
      FROM QA1_Questions AS q
      INNER JOIN QA1_Users AS u
        ON q.uid_user = u.uid_user
+     LEFT JOIN QA1_Boards AS b
+       ON q.board_id = b.board_id
      WHERE q.question_id = ?
      LIMIT 1`,
     [questionId]
@@ -225,49 +193,9 @@ async function loadQuestionWithAnswers(questionId) {
   };
 }
 
-app.get("/questions/new", requireLogin, (req, res) => {
-  renderQuestionForm(res, "new");
-});
-
-app.post("/questions", requireLogin, async (req, res) => {
-  const values = {
-    title: String(req.body.title || "").trim(),
-    body: String(req.body.body || "").trim()
-  };
-
-  if (values.title.length < 1 || values.title.length > 150) {
-    return renderQuestionForm(
-      res,
-      "new",
-      values,
-      "Question title must be between 1 and 150 characters."
-    );
-  }
-
-  if (!values.body) {
-    return renderQuestionForm(
-      res,
-      "new",
-      values,
-      "Question body cannot be empty."
-    );
-  }
-
-  try {
-    const pool = getPool();
-    const [result] = await pool.execute(
-      "INSERT INTO QA1_Questions (uid_user, title, body) VALUES (?, ?, ?)",
-      [req.session.uid_user, values.title, values.body]
-    );
-
-    res.redirect(`/questions/${result.insertId}`);
-  } catch (error) {
-    console.error(`Question creation failed: ${error.code || "UNKNOWN_ERROR"}`);
-    res.status(500).render("error", {
-      title: "Question error",
-      message: "We could not create your question right now."
-    });
-  }
+// Old form submissions retain their body but now post into General.
+app.post("/questions", requireLogin, (req, res) => {
+  res.redirect(307, "/b/general/questions");
 });
 
 app.get("/questions/:id", questionGate(), async (req, res) => {

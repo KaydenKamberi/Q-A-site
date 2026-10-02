@@ -7,9 +7,8 @@ const {
   canDeleteBoard
 } = require("../lib/boards/index.js");
 
-// Mount at "/" before the old home and /questions/new routes after both branches
-// are merged. Pass { getDatabaseStatus: () => databaseStatus } from app.js.
-// The board logic and views deliberately belong to the other agents.
+// Mounted at "/" in app.js; the logic module and board views belong to the
+// other agents. The callback keeps the existing home-view status up to date.
 function createBoardRouter({ getDatabaseStatus }) {
   if (typeof getDatabaseStatus !== "function") {
     throw new TypeError("getDatabaseStatus must be a function.");
@@ -94,8 +93,8 @@ function createBoardRouter({ getDatabaseStatus }) {
     return {
       name: String(body.name || ""),
       title: String(body.title || ""),
-      description: String(body.description || ""),
-      rules: String(body.rules || "")
+      description: String(body.description || "").trim(),
+      rules: String(body.rules || "").trim()
     };
   }
 

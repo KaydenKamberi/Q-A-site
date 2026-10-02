@@ -4,6 +4,8 @@
   <p class="eyebrow">
     <% if (question.room_id) { %>
       <a class="back-link" href="/rooms/<%= question.room_id %>">← Back to room</a>
+    <% } else if (question.board_name) { %>
+      <a class="back-link" href="/b/<%= question.board_name %>">← Back to b/<%= question.board_name %> · <%= question.board_title %></a>
     <% } else { %>
       <a class="back-link" href="/">← All questions</a>
     <% } %>

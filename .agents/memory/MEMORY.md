@@ -1,1 +1,2 @@
 - [GitHub push authentication](github-push-auth.md) — connector authorization does not necessarily authorize the Git HTTPS remote.
+- [Node test targets](node-test-targets.md) — use explicit test-file targets; a directory target fails on this workspace's Node runtime.
