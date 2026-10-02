@@ -1,0 +1,55 @@
+<%- include("../partials/header", { title: "Boards · Campus Q&A" }) %>
+<link rel="stylesheet" href="/css/boards.css">
+
+<main class="shell">
+  <section class="hero hero-row">
+    <div>
+      <p class="eyebrow">Public boards</p>
+      <h1>Boards</h1>
+      <p class="intro">Browse topic boards and ask questions where the right people will see them.</p>
+    </div>
+    <% if (user) { %>
+      <a class="button hero-button" href="/boards/new">Create board</a>
+    <% } %>
+  </section>
+
+  <section class="questions-section">
+    <div class="section-heading">
+      <h2>All boards</h2>
+      <span class="question-count"><%= boards.length %> board<%= boards.length === 1 ? "" : "s" %></span>
+    </div>
+
+    <% if (!boards.length) { %>
+      <div class="card empty-state">
+        <h3>No boards yet</h3>
+        <% if (user) { %>
+          <p>Start the first one.</p>
+          <a class="button button-inline" href="/boards/new">Create a board</a>
+        <% } else { %>
+          <p>Log in to create the first board.</p>
+          <a class="button button-inline" href="/login">Log in</a>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="question-list">
+        <% boards.forEach((board) => { %>
+          <a class="board-list-item" href="/b/<%= board.name %>">
+            <div class="board-list-main">
+              <p class="board-handle">b/<%= board.name %></p>
+              <strong class="board-list-title"><%= board.title %></strong>
+              <% if (board.description) { %>
+                <p class="board-list-description"><%= board.description %></p>
+              <% } %>
+            </div>
+            <div class="answer-count">
+              <strong><%= board.question_count %></strong>
+              <span>question<%= Number(board.question_count) === 1 ? "" : "s" %></span>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>

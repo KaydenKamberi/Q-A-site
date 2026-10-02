@@ -1,0 +1,72 @@
+<%- include("../partials/header", { title: `${board.title} · Campus Q&A` }) %>
+<link rel="stylesheet" href="/css/boards.css">
+
+<main class="shell">
+  <p class="eyebrow"><a class="back-link" href="/boards">← All boards</a></p>
+
+  <section class="detail-card">
+    <p class="eyebrow">b/<%= board.name %></p>
+    <h1><%= board.title %></h1>
+    <% if (board.description) { %>
+      <p class="board-description"><%= board.description %></p>
+    <% } %>
+    <p class="question-meta">
+      Created by <strong><%= board.creator_uName %></strong>
+      <span aria-hidden="true">·</span>
+      <%= new Date(board.created_at).toLocaleDateString() %>
+    </p>
+
+    <% if (board.rules_list && board.rules_list.length) { %>
+      <div class="board-rules">
+        <h2>Rules</h2>
+        <ol>
+          <% board.rules_list.forEach((rule) => { %>
+            <li><%= rule %></li>
+          <% }) %>
+        </ol>
+      </div>
+    <% } %>
+
+    <div class="room-actions">
+      <% if (user) { %>
+        <a class="button button-inline" href="/b/<%= board.name %>/questions/new">Ask in this board</a>
+      <% } else { %>
+        <a class="button button-inline" href="/login">Log in to ask a question</a>
+      <% } %>
+      <% if (canEdit) { %>
+        <a class="button button-secondary button-inline" href="/b/<%= board.name %>/edit">Edit board</a>
+      <% } %>
+      <% if (canDelete) { %>
+        <a class="button button-small danger-button" href="/b/<%= board.name %>/delete">Delete board</a>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="questions-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Newest first</p>
+        <h2>Questions</h2>
+      </div>
+      <span class="question-count"><%= questions.length %> question<%= questions.length === 1 ? "" : "s" %></span>
+    </div>
+
+    <% if (!questions.length) { %>
+      <div class="card empty-state">
+        <h3>No questions yet</h3>
+        <p>Be the first person to ask something in b/<%= board.name %>.</p>
+        <% if (user) { %>
+          <a class="button button-inline" href="/b/<%= board.name %>/questions/new">Ask the first question</a>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="question-list">
+        <% questions.forEach((question) => { %>
+          <%- include("../partials/boards/question-card", { question }) %>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>

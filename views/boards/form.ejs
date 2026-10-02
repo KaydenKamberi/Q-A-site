@@ -1,0 +1,95 @@
+<% const isEdit = mode === "edit"; %>
+<% const fieldErrors = errors || {}; %>
+<%- include("../partials/header", { title: `${isEdit ? `Edit b/${board.name}` : "Create a board"} · Campus Q&A` }) %>
+<link rel="stylesheet" href="/css/boards.css">
+
+<main class="shell narrow-shell">
+  <% if (isEdit) { %>
+    <p class="eyebrow"><a class="back-link" href="/b/<%= board.name %>">← Back to b/<%= board.name %></a></p>
+  <% } else { %>
+    <p class="eyebrow"><a class="back-link" href="/boards">← All boards</a></p>
+  <% } %>
+
+  <section class="form-card">
+    <p class="eyebrow"><%= isEdit ? "Board settings" : "New board" %></p>
+    <h1><%= isEdit ? "Edit board" : "Create a board" %></h1>
+    <p class="form-intro">
+      <%= isEdit
+        ? "Update the title, description, and rules. The board's name can't be changed."
+        : "Boards are public. Anyone can read them, and logged-in users can post questions." %>
+    </p>
+
+    <%- include("../partials/boards/form-errors", { errors: fieldErrors, fields: ["name", "title", "description", "rules"] }) %>
+
+    <form method="POST" action="<%= isEdit ? `/b/${board.name}/edit` : "/boards" %>" class="stacked-form">
+      <label for="name">Name</label>
+      <% if (isEdit) { %>
+        <input id="name" type="text" value="<%= board.name %>" disabled>
+        <p class="field-help">Board names are permanent: /b/<%= board.name %></p>
+      <% } else { %>
+        <div class="board-name-input<%= fieldErrors.name ? " has-error" : "" %>">
+          <span class="board-name-prefix" aria-hidden="true">b/</span>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            minlength="3"
+            maxlength="30"
+            pattern="[A-Za-z0-9_]{3,30}"
+            autocapitalize="none"
+            spellcheck="false"
+            value="<%= values.name || "" %>"
+            aria-describedby="name-help"
+            required
+          >
+        </div>
+        <% if (fieldErrors.name) { %><p class="field-error"><%= fieldErrors.name %></p><% } %>
+        <p class="field-help" id="name-help">3–30 characters: letters, numbers, and underscores. Saved in lowercase and used in the URL.</p>
+      <% } %>
+
+      <label for="title">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        maxlength="100"
+        class="<%= fieldErrors.title ? "has-error" : "" %>"
+        value="<%= values.title || "" %>"
+        placeholder="AP European History"
+        required
+      >
+      <% if (fieldErrors.title) { %><p class="field-error"><%= fieldErrors.title %></p><% } %>
+      <p class="field-help">Up to 100 characters.</p>
+
+      <label for="description">Description <span class="board-optional">(optional)</span></label>
+      <textarea
+        id="description"
+        name="description"
+        rows="3"
+        maxlength="500"
+        class="board-short-textarea<%= fieldErrors.description ? " has-error" : "" %>"
+      ><%= values.description || "" %></textarea>
+      <% if (fieldErrors.description) { %><p class="field-error"><%= fieldErrors.description %></p><% } %>
+      <p class="field-help">Up to 500 characters.</p>
+
+      <label for="rules">Rules <span class="board-optional">(optional)</span></label>
+      <textarea
+        id="rules"
+        name="rules"
+        rows="6"
+        maxlength="5000"
+        class="<%= fieldErrors.rules ? "has-error" : "" %>"
+        placeholder="Be kind.&#10;Show what you've tried.&#10;No homework dumps."
+      ><%= values.rules || "" %></textarea>
+      <% if (fieldErrors.rules) { %><p class="field-error"><%= fieldErrors.rules %></p><% } %>
+      <p class="field-help">One rule per line. They'll show as a numbered list.</p>
+
+      <div class="form-actions">
+        <button class="button" type="submit"><%= isEdit ? "Save changes" : "Create board" %></button>
+        <a class="button button-secondary button-inline" href="<%= isEdit ? `/b/${board.name}` : "/boards" %>">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>

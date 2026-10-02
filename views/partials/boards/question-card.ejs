@@ -1,0 +1,15 @@
+<%# Expects `question`: { question_id, title, uName, created_at, answer_count } %>
+<article class="question-card">
+  <div class="question-card-main">
+    <p class="question-meta">
+      Asked by <strong><%= question.uName %></strong>
+      <span aria-hidden="true">·</span>
+      <%= new Date(question.created_at).toLocaleString() %>
+    </p>
+    <h3><a href="/questions/<%= question.question_id %>"><%= question.title %></a></h3>
+  </div>
+  <div class="answer-count">
+    <strong><%= question.answer_count %></strong>
+    <span>answer<%= Number(question.answer_count) === 1 ? "" : "s" %></span>
+  </div>
+</article>
